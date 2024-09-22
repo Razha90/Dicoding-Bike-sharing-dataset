@@ -36,10 +36,15 @@ with col2:
     st.header("Kolom 2")
 
 # plot_df = filtered_hour_df.groupby('dteday')['cnt'].sum().reset_index()
-plot_df = filtered_hour_df.groupby(pd.Grouper(key='dteday', freq='W'))['cnt'].sum().reset_index()
+filtered_hour_df = hour_df[(hour_df['dteday'] >= pd.to_datetime(start_date)) & (hour_df['dteday'] <= pd.to_datetime(end_date))]
 
-# Jika Anda ingin menampilkan data hanya setiap dua minggu
-plot_df = plot_df.iloc[::2] 
+# Mengelompokkan data ke dalam rentang 10 hari
+filtered_hour_df['date_range'] = pd.cut(filtered_hour_df['dteday'], 
+                                          bins=pd.date_range(start=start_date, end=end_date, freq='10D'),
+                                          right=False)
+
+# Menghitung total penjualan untuk setiap rentang
+plot_df = filtered_hour_df.groupby('date_range')['cnt'].sum().reset_index()
 plt.figure(figsize=(10, 6))
 sns.barplot(x='dteday', y='cnt', data=filtered_hour_df, errorbar=None, hue='dteday', palette='viridis', legend=False)
 sns.despine()
